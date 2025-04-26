@@ -1,49 +1,85 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const app = express();
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { Octokit } from '@octokit/core';
+import dotenv from 'dotenv';
+dotenv.config();
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 const SESSIONS_FILE = path.join(__dirname, 'sessions.json');
 
-// Initialize sessions file
 if (!fs.existsSync(SESSIONS_FILE)) {
     fs.writeFileSync(SESSIONS_FILE, JSON.stringify([]));
 }
 
-// Mock Codespace API
-const createCodespace = () => ({
-    codespaceId: `cs-${uuidv4()}`,
-    status: 'active',
-    url: `https://codespace.example.com/${uuidv4()}`
-});
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-// Create new session
-app.post('/api/create-session', (req, res) => {
+async function createCodespace() {
+    try {
+        const response = await octokit.request(
+            'POST /repos/{owner}/{repo}/codespaces',
+            {
+                owner: 'SoheshMG',
+                repo: 'DynamicUrlTesting',
+                ref: 'main',
+                machine: 'basicLinux32gb',
+                location: 'southeastasia',
+                devcontainer_path: '.devcontainer/devcontainer.json',
+                idle_timeout_minutes: 30,
+                retention_period_minutes: 480,
+                headers: {
+                    'X-GitHub-Api-Version': '2022-11-28'
+                }
+            }
+        );
+
+        const cs = response.data;
+        return {
+            id: cs.id,
+            name: cs.name,
+            url: cs.web_url,
+            status: cs.state
+        };
+    } catch (err) {
+        console.error('Error creating codespace:', err);
+        throw new Error('Failed to create codespace');
+    }
+}
+;
+
+app.post('/api/create-session', async (req, res) => {
     try {
         const { email, username } = req.body;
         const guid = uuidv4();
         const conversationId = `conv-${uuidv4()}`;
-        
-        // Create codespace
-        const codespace = createCodespace();
-        
-        // Create session data
+
+        const codespace = await createCodespace();
+
+        const previewUrl = `https://${codespace.name}-3000.app.github.dev/preview/${guid}`;
+        const websocketUrl = `https://${codespace.name}-8080.app.github.dev/websocket/${guid}`;
+
         const sessionData = {
             guid,
             conversationId,
             email,
             username,
             codespaceId: codespace.codespaceId,
-            previewUrl: `http://localhost:3000/preview/${guid}`,
+            codespaceName: codespace.name,
+            previewUrl,
+            websocketUrl,
             createdAt: new Date().toISOString(),
             status: 'active'
         };
 
-        // Save to JSON
         const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE));
         sessions.push(sessionData);
         fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
@@ -51,6 +87,7 @@ app.post('/api/create-session', (req, res) => {
         res.json({
             success: true,
             previewUrl: sessionData.previewUrl,
+            websocketUrl: sessionData.websocketUrl,
             conversationId: sessionData.conversationId
         });
 
@@ -60,23 +97,22 @@ app.post('/api/create-session', (req, res) => {
     }
 });
 
-// Preview endpoint
 app.get('/preview/:guid', (req, res) => {
     const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE));
     const session = sessions.find(s => s.guid === req.params.guid);
-    
+
     if (!session) return res.status(404).send('Session not found');
-    
-    // Render preview page (mock)
+
     res.send(`
         <h1>Code Preview</h1>
         <p>Session for: ${session.email}</p>
         <p>Codespace ID: ${session.codespaceId}</p>
+        <p>Codespace Name: ${session.codespaceName}</p>
+        <p>WebSocket URL: ${session.websocketUrl}</p>
         <p>Created at: ${session.createdAt}</p>
     `);
 });
 
-// Get user sessions
 app.get('/api/sessions/:email', (req, res) => {
     const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE));
     const userSessions = sessions.filter(s => s.email === req.params.email);
