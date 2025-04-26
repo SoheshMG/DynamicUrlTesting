@@ -9,6 +9,11 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 const SESSIONS_FILE = path.join(__dirname, 'sessions.json');
 
+//----------------------------------------------------------------
+//-------------------------Its working!!--------------------------
+//----------------------------------------------------------------
+
+
 // Initialize sessions file
 if (!fs.existsSync(SESSIONS_FILE)) {
     fs.writeFileSync(SESSIONS_FILE, JSON.stringify([]));
@@ -27,10 +32,10 @@ app.post('/api/create-session', (req, res) => {
         const { email, username } = req.body;
         const guid = uuidv4();
         const conversationId = `conv-${uuidv4()}`;
-        
+
         // Create codespace
         const codespace = createCodespace();
-        
+
         // Create session data
         const sessionData = {
             guid,
@@ -64,9 +69,9 @@ app.post('/api/create-session', (req, res) => {
 app.get('/preview/:guid', (req, res) => {
     const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE));
     const session = sessions.find(s => s.guid === req.params.guid);
-    
+
     if (!session) return res.status(404).send('Session not found');
-    
+
     // Render preview page (mock)
     res.send(`
         <h1>Code Preview</h1>
