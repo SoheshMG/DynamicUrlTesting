@@ -1,16 +1,46 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Code Generation Signup</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
-        #preview-section { margin-top: 20px; display: none; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #preview-section {
+            margin-top: 20px;
+            display: none;
+        }
     </style>
 </head>
+
 <body>
     <h1>Generate Code Preview</h1>
     <form id="signupForm">
@@ -29,7 +59,11 @@
         <p>Your preview is ready: <a id="preview-link" target="_blank">Open Preview</a></p>
         <p>Bookmark this URL to access later</p>
     </div>
-
+    <div id="websocket-section" style="display: none;">
+        <h3>WebSocket Connection</h3>
+        <p>Connect to: <a id="websocket-link" href="#" target="_blank"></a></p>
+    </div>
     <script src="script.js"></script>
 </body>
+
 </html>
