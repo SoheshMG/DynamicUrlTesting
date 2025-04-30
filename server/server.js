@@ -28,12 +28,11 @@ async function createCodespace() {
         const response = await octokit.request(
             'POST /repos/{owner}/{repo}/codespaces',
             {
-                owner: 'SoheshMG',
-                repo: 'DynamicUrlTesting',
-                ref: 'main',
+                owner: 'AI-Pundit',
+                repo: 'AI-Pundit-Preview',
+                ref: 'development',
                 machine: 'basicLinux32gb',
                 location: 'southeastasia',
-                devcontainer_path: '.devcontainer/devcontainer.json',
                 idle_timeout_minutes: 30,
                 retention_period_minutes: 480,
                 headers: {
@@ -53,8 +52,7 @@ async function createCodespace() {
         console.error('Error creating codespace:', err);
         throw new Error('Failed to create codespace');
     }
-}
-;
+};
 
 app.post('/api/create-session', async (req, res) => {
     try {
@@ -64,8 +62,8 @@ app.post('/api/create-session', async (req, res) => {
 
         const codespace = await createCodespace();
 
-        const previewUrl = `https://${codespace.name}-3000.app.github.dev/preview/${guid}`;
-        const websocketUrl = `https://${codespace.name}-8080.app.github.dev/websocket/${guid}`;
+        const previewUrl = `https://${codespace.name}-5173.app.github.dev`;
+        const websocketUrl = `https://${codespace.name}-8080.app.github.dev`;
 
         const sessionData = {
             guid,
