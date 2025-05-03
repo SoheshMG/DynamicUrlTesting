@@ -4,16 +4,15 @@ const codespaceService = require('../services/codespace.service');
 const sessionService = require('../services/session.service');
 
 router.post('/', (req, res) => {
+  const { email, username } = req.body;
+  const repo = process.env.GITHUB_REPO;
+  const branch = process.env.GITHUB_BRANCH;
+  const machine = process.env.GITHUB_MACHINE;
+
   try {
-    const { email, username } = req.body;
-    const codespace = codespaceService.createCodespace();
+    const codespace = codespaceService.createCodespace(repo, branch, machine);
     const session = sessionService.createSession(email, username, codespace);
-    res.json({
-      success: true,
-      codespaceId: session.codespaceId,
-      url: session.codespaceUrl,
-      conversationId: session.conversationId,
-    });
+    res.json(session);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

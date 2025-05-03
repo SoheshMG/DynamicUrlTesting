@@ -1,26 +1,25 @@
 const express = require('express');
-const dotenv = require('dotenv');
+const cors = require('cors');
 const path = require('path');
-
-// Load environment variables
-dotenv.config();
+const { PORT } = require('./config');
 
 const app = express();
-
-// Middleware
+app.use(cors());
 app.use(express.json());
+
+// Serve static files from ../public (relative to server/)
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Route imports
-const apiRoutes = require('./routes/api.routes');
-const previewRoutes = require('./routes/preview.routes');
-const codespaceRoutes = require('./routes/codespace.routes'); // ✅ Add this
+// Serve index.html on root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
-// Route usage
-app.use('/api/sessions', apiRoutes);
-app.use('/api/preview', previewRoutes);
-app.use('/api/codespace', codespaceRoutes); // ✅ Mount your codespace API
+// API routes
+app.use('/api/codespace', require('./routes/codespace.routes'));
+app.use('/api/preview', require('./routes/preview.routes'));
+app.use('/api/session', require('./routes/api.routes'));
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});

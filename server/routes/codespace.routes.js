@@ -2,36 +2,42 @@ const express = require('express');
 const router = express.Router();
 const codespaceService = require('../services/codespace.service');
 
-// Create a new Codespace
-router.post('/create', async (req, res) => {
+let lastCreatedCodespace = null;
+
+router.post('/create', (req, res) => {
+  const { repo, branch, machine } = req.body;
+  if (!repo) return res.status(400).json({ error: 'Repository is required' });
+
   try {
-    const { repo, branch, machine } = req.body;
-    const result = await codespaceService.createCodespace(repo, branch, machine);
-    res.status(200).json({ message: 'Codespace created successfully', result });
+    const codespace = codespaceService.createCodespace(repo, branch, machine);
+    lastCreatedCodespace = codespace.codespaceId;
+    res.json({ success: true, result: codespace });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create codespace', details: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Check Codespace status
-router.get('/status/:name', async (req, res) => {
+router.get('/status/:name?', (req, res) => {
+  const name = req.params.name || lastCreatedCodespace;
+  if (!name) return res.status(400).json({ error: 'No codespace name provided' });
+
   try {
-    const name = req.params.name;
-    const status = await codespaceService.getCodespaceStatus(name);
-    res.status(200).json({ status });
+    const status = codespaceService.getCodespaceStatus(name);
+    res.json({ success: true, status });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to get status', details: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Stop/Delete a Codespace
-router.delete('/stop/:name', async (req, res) => {
+router.delete('/stop/:name?', (req, res) => {
+  const name = req.params.name || lastCreatedCodespace;
+  if (!name) return res.status(400).json({ error: 'No codespace name provided' });
+
   try {
-    const name = req.params.name;
-    const result = await codespaceService.stopCodespace(name);
-    res.status(200).json({ message: 'Codespace stopped', result });
+    const result = codespaceService.stopCodespace(name);
+    res.json({ success: true, result });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to stop codespace', details: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 

@@ -22,6 +22,7 @@ exports.createSession = (email, username, codespace) => {
     email,
     username,
     codespaceId: codespace.codespaceId,
+    codespaceUrl: codespace.codespaceUrl,
     previewUrl: `${BASE_URL}/${guid}`,
     createdAt: new Date().toISOString(),
     status: 'active',

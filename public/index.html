@@ -1,70 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
   <title>Codespace Manager</title>
   <style>
-    body { font-family: sans-serif; padding: 2rem; background: #f8f8f8; }
-    button { margin: 0.5rem; padding: 0.5rem 1rem; }
-    #status { margin-top: 1rem; }
-    input { margin: 0.5rem 0; width: 300px; padding: 0.4rem; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input, button {
+      margin: 5px;
+      padding: 8px;
+      font-size: 16px;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+      max-height: 400px;
+      overflow: auto;
+    }
   </style>
 </head>
 <body>
-  <h2>GitHub Codespace Manager</h2>
+  <h1>Codespace Manager</h1>
 
-  <label>GitHub Repo (e.g. user/repo):</label><br />
-  <input type="text" id="repo" placeholder="org/repo" /><br />
-  
-  <label>Branch:</label><br />
-  <input type="text" id="branch" placeholder="main" /><br />
+  <form id="createForm">
+    <input name="repo" value="AI-Pundit/AI-Pundit-Preview" required />
+    <button type="submit">Create Codespace</button>
+  </form>
 
-  <button onclick="createCodespace()">Create Codespace</button>
-  <button onclick="checkStatus()">Check Devcontainer Status</button>
-  <button onclick="stopCodespace()">Stop/Delete Codespace</button>
+  <button onclick="checkStatus()" id="statusBtn" disabled>Check Status</button>
+  <button onclick="stopCodespace()" id="stopBtn" disabled>Stop Codespace</button>
 
-  <div id="status"></div>
+  <pre id="output">Waiting for action...</pre>
 
   <script>
-    let currentCodespaceName = "";
+    let lastId = '';
 
-    async function createCodespace() {
-      const repo = document.getElementById("repo").value;
-      const branch = document.getElementById("branch").value;
+    document.getElementById('createForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const repo = e.target.repo.value;
 
-      const res = await fetch("/api/codespace/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repo, branch })
+      updateOutput('Creating codespace...');
+      const res = await fetch('/api/codespace/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repo })
       });
 
       const data = await res.json();
-      document.getElementById("status").innerText = JSON.stringify(data, null, 2);
-      if (data.codespaceName) currentCodespaceName = data.codespaceName;
-    }
-
-    async function checkStatus() {
-      if (!currentCodespaceName) {
-        alert("No codespace created yet!");
-        return;
+      if (data.result && data.result.codespaceId) {
+        lastId = data.result.codespaceId;
+        document.getElementById('statusBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = false;
       }
 
-      const res = await fetch(`/api/codespace/status/${currentCodespaceName}`);
+      updateOutput(data);
+    };
+
+    async function checkStatus() {
+      if (!lastId) return alert("No Codespace ID found. Create one first.");
+      updateOutput(`Checking status of: ${lastId} ...`);
+      const res = await fetch(`/api/codespace/status/${lastId}`);
       const data = await res.json();
-      document.getElementById("status").innerText = JSON.stringify(data, null, 2);
+      updateOutput(data);
     }
 
     async function stopCodespace() {
-      if (!currentCodespaceName) {
-        alert("No codespace created yet!");
-        return;
-      }
-
-      const res = await fetch(`/api/codespace/${currentCodespaceName}`, {
-        method: "DELETE"
-      });
+      if (!lastId) return alert("No Codespace ID found. Create one first.");
+      updateOutput(`Stopping: ${lastId} ...`);
+      const res = await fetch(`/api/codespace/stop/${lastId}`, { method: 'DELETE' });
       const data = await res.json();
-      document.getElementById("status").innerText = JSON.stringify(data, null, 2);
+      updateOutput(data);
+    }
+
+    function updateOutput(content) {
+      const el = document.getElementById('output');
+      el.textContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
     }
   </script>
 </body>
