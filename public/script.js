@@ -4,25 +4,24 @@ document.getElementById('createForm').onsubmit = async (e) => {
   e.preventDefault();
   const res = await fetch('/api/codespace/create', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' },
   });
-  const text = await res.text();
-  const nameMatch = text.match(/Name:\s(.+)/);
-  if (nameMatch) lastId = nameMatch[1].trim();
-  document.getElementById('output').textContent = text;
+  const data = await res.json();
+  const match = data.message.match(/"([^"]+)"/);
+  if (match) lastId = match[1];
+  document.getElementById('output').textContent = data.message;
 };
 
 async function checkStatus() {
-  if (!lastId) return alert('No codespace to check.');
+  if (!lastId) return alert('❗ No codespace created yet.');
   const res = await fetch(`/api/codespace/status/${lastId}`);
-  const text = await res.text();
-  document.getElementById('output').textContent = text;
+  const data = await res.json();
+  document.getElementById('output').textContent = data.message;
 }
 
 async function stopCodespace() {
-  if (!lastId) return alert('No codespace to stop.');
+  if (!lastId) return alert('❗ No codespace created yet.');
   const res = await fetch(`/api/codespace/stop/${lastId}`, { method: 'DELETE' });
-  const text = await res.text();
-  document.getElementById('output').textContent = text;
-  lastId = '';
+  const data = await res.json();
+  document.getElementById('output').textContent = data.message;
 }

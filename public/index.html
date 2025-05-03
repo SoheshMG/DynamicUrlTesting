@@ -2,21 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>GitHub Codespace Manager</title>
-  <link rel="stylesheet" href="/css/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Codespace Manager</title>
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <h1>GitHub Codespace Manager</h1>
+  <div class="container">
+    <h1>Codespace Manager</h1>
 
-  <form id="createForm">
-    <button type="submit">Create Codespace</button>
-  </form>
+    <form id="createForm">
+      <button type="submit">Create Codespace</button>
+    </form>
 
-  <button onclick="checkStatus()">Check Status</button>
-  <button onclick="stopCodespace()">Delete Codespace</button>
+    <div class="button-group">
+      <button onclick="checkStatus()">Check Status</button>
+      <button onclick="stopCodespace()">Stop Codespace</button>
+    </div>
 
-  <pre id="output"></pre>
-
-  <script src="/script.js"></script>
+    <pre id="output">Awaiting action...</pre>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
