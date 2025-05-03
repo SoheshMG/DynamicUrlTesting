@@ -1,38 +1,50 @@
-document.getElementById('signupForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const userData = {
-        email: document.getElementById('email').value,
-        username: document.getElementById('username').value
-    };
+let lastId = '';
 
-    try {
-        const response = await fetch('http://localhost:3000/api/create-session', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(userData)
-        });
-
-        if (!response.ok) throw new Error('Session creation failed');
-        
-        const { previewUrl, conversationId } = await response.json();
-        
-        // Show preview section
-        document.getElementById('preview-section').style.display = 'block';
-        document.getElementById('preview-link').href = previewUrl;
-        document.getElementById('preview-link').textContent = previewUrl;
-
-        // Store in localStorage
-        localStorage.setItem(conversationId, JSON.stringify({
-            email: userData.email,
-            previewUrl,
-            timestamp: new Date().toISOString()
-        }));
-
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to create session. Please try again.');
+document.getElementById('createForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const repo = e.target.repo.value;
+  setOutput("Creating codespace...");
+  try {
+    const res = await fetch('/api/codespace/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ repo })
+    });
+    const data = await res.json();
+    if (data.result?.name) {
+      lastId = data.result.name;
     }
-});
+    setOutput(data);
+  } catch (err) {
+    setOutput({ error: err.message });
+  }
+};
+
+async function checkStatus() {
+  if (!lastId) return setOutput("No codespace created yet.");
+  setOutput("Checking status...");
+  try {
+    const res = await fetch(`/api/codespace/status/${lastId}`);
+    const data = await res.json();
+    setOutput(data);
+  } catch (err) {
+    setOutput({ error: err.message });
+  }
+}
+
+async function stopCodespace() {
+  if (!lastId) return setOutput("No codespace created yet.");
+  setOutput("Stopping codespace...");
+  try {
+    const res = await fetch(`/api/codespace/stop/${lastId}`, { method: 'DELETE' });
+    const data = await res.json();
+    setOutput(data);
+  } catch (err) {
+    setOutput({ error: err.message });
+  }
+}
+
+function setOutput(data) {
+  document.getElementById('output').textContent =
+    typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+}

@@ -1,84 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Codespace Manager</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css" />
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      margin: 40px;
     }
-    input, button {
-      margin: 5px;
-      padding: 8px;
-      font-size: 16px;
+    h2 {
+      margin-bottom: 10px;
     }
     pre {
-      background: #f4f4f4;
-      padding: 10px;
-      border: 1px solid #ccc;
+      background-color: #f4f4f4;
+      padding: 1em;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .button-group {
       margin-top: 20px;
-      max-height: 400px;
-      overflow: auto;
     }
   </style>
 </head>
 <body>
-  <h1>Codespace Manager</h1>
+  <h2>GitHub Codespace Manager</h2>
 
   <form id="createForm">
-    <input name="repo" value="AI-Pundit/AI-Pundit-Preview" required />
-    <button type="submit">Create Codespace</button>
+    <label for="repo">Repository (org/repo):</label>
+    <input type="text" id="repo" name="repo" value="AI-Pundit/AI-Pundit-Preview" required />
+    <button type="submit" class="button-primary">Create Codespace</button>
   </form>
 
-  <button onclick="checkStatus()" id="statusBtn" disabled>Check Status</button>
-  <button onclick="stopCodespace()" id="stopBtn" disabled>Stop Codespace</button>
+  <div class="button-group">
+    <button onclick="checkStatus()">Check Status</button>
+    <button onclick="stopCodespace()" class="button-outline">Stop Codespace</button>
+  </div>
 
-  <pre id="output">Waiting for action...</pre>
+  <h4>Response:</h4>
+  <pre id="output">Click a button to begin...</pre>
 
-  <script>
-    let lastId = '';
-
-    document.getElementById('createForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const repo = e.target.repo.value;
-
-      updateOutput('Creating codespace...');
-      const res = await fetch('/api/codespace/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ repo })
-      });
-
-      const data = await res.json();
-      if (data.result && data.result.codespaceId) {
-        lastId = data.result.codespaceId;
-        document.getElementById('statusBtn').disabled = false;
-        document.getElementById('stopBtn').disabled = false;
-      }
-
-      updateOutput(data);
-    };
-
-    async function checkStatus() {
-      if (!lastId) return alert("No Codespace ID found. Create one first.");
-      updateOutput(`Checking status of: ${lastId} ...`);
-      const res = await fetch(`/api/codespace/status/${lastId}`);
-      const data = await res.json();
-      updateOutput(data);
-    }
-
-    async function stopCodespace() {
-      if (!lastId) return alert("No Codespace ID found. Create one first.");
-      updateOutput(`Stopping: ${lastId} ...`);
-      const res = await fetch(`/api/codespace/stop/${lastId}`, { method: 'DELETE' });
-      const data = await res.json();
-      updateOutput(data);
-    }
-
-    function updateOutput(content) {
-      const el = document.getElementById('output');
-      el.textContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
