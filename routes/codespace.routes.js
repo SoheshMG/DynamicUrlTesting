@@ -4,29 +4,28 @@ const codespaceService = require('../services/codespace.service');
 
 router.post('/create', async (req, res) => {
   try {
-    const { repo } = req.body;
-    const result = await codespaceService.createCodespace(repo);
-    res.json({ result });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const result = await codespaceService.createCodespace();
+    res.send(result);
+  } catch (err) {
+    res.status(500).send(`Error: ${err.message}`);
   }
 });
 
-router.get('/status/:id', async (req, res) => {
+router.get('/status/:name', async (req, res) => {
   try {
-    const result = await codespaceService.checkStatus(req.params.id);
-    res.json({ result });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const result = await codespaceService.checkStatus(req.params.name);
+    res.send(result);
+  } catch (err) {
+    res.status(500).send(`Error: ${err.message}`);
   }
 });
 
-router.delete('/stop/:id', async (req, res) => {
+router.delete('/stop/:name', async (req, res) => {
   try {
-    const result = await codespaceService.stopCodespace(req.params.id);
-    res.json({ result });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const result = await codespaceService.deleteCodespace(req.params.name);
+    res.send(result);
+  } catch (err) {
+    res.status(500).send(`Error: ${err.message}`);
   }
 });
 

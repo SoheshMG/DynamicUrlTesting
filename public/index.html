@@ -2,44 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Codespace Manager</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css" />
-  <style>
-    body {
-      margin: 40px;
-    }
-    h2 {
-      margin-bottom: 10px;
-    }
-    pre {
-      background-color: #f4f4f4;
-      padding: 1em;
-      border-radius: 5px;
-      overflow-x: auto;
-    }
-    .button-group {
-      margin-top: 20px;
-    }
-  </style>
+  <title>GitHub Codespace Manager</title>
+  <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>
-  <h2>GitHub Codespace Manager</h2>
+  <h1>GitHub Codespace Manager</h1>
 
   <form id="createForm">
-    <label for="repo">Repository (org/repo):</label>
-    <input type="text" id="repo" name="repo" value="AI-Pundit/AI-Pundit-Preview" required />
-    <button type="submit" class="button-primary">Create Codespace</button>
+    <button type="submit">Create Codespace</button>
   </form>
 
-  <div class="button-group">
-    <button onclick="checkStatus()">Check Status</button>
-    <button onclick="stopCodespace()" class="button-outline">Stop Codespace</button>
-  </div>
+  <button onclick="checkStatus()">Check Status</button>
+  <button onclick="stopCodespace()">Delete Codespace</button>
 
-  <h4>Response:</h4>
-  <pre id="output">Click a button to begin...</pre>
+  <pre id="output"></pre>
 
-  <script src="script.js"></script>
+  <script src="/script.js"></script>
 </body>
 </html>
