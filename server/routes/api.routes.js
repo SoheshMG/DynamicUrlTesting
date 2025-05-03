@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const sessionService = require('../services/session.service');
 const codespaceService = require('../services/codespace.service');
+const sessionService = require('../services/session.service');
 
 router.post('/', (req, res) => {
   try {
@@ -10,7 +10,8 @@ router.post('/', (req, res) => {
     const session = sessionService.createSession(email, username, codespace);
     res.json({
       success: true,
-      previewUrl: session.previewUrl,
+      codespaceId: session.codespaceId,
+      url: session.codespaceUrl,
       conversationId: session.conversationId,
     });
   } catch (err) {

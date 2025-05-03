@@ -1,18 +1,15 @@
-const dotenv = require('dotenv');
-dotenv.config();
-
 const express = require('express');
-const app = express();
+const dotenv = require('dotenv');
 const path = require('path');
-
-// Routers
 const apiRoutes = require('./routes/api.routes');
 const previewRoutes = require('./routes/preview.routes');
 
+dotenv.config();
+
+const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Mount routes
 app.use('/api/sessions', apiRoutes);
 app.use('/api/preview', previewRoutes);
 

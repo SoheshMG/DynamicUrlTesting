@@ -10,6 +10,7 @@ router.get('/:guid', (req, res) => {
     <h1>Code Preview</h1>
     <p>Email: ${session.email}</p>
     <p>Codespace ID: ${session.codespaceId}</p>
+    <p>Codespace URL: <a href="${session.codespaceUrl}" target="_blank">${session.codespaceUrl}</a></p>
     <p>Created At: ${session.createdAt}</p>
   `);
 });
