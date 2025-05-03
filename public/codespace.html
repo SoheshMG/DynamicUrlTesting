@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Codespace Manager</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input {
+      margin-top: 0.25rem;
+      padding: 0.4rem;
+      width: 300px;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.6rem 1rem;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Codespace Manager</h1>
+
+  <label>Repository (e.g., username/repo)</label>
+  <input id="repo" placeholder="your-org/your-repo" />
+
+  <label>Branch</label>
+  <input id="branch" placeholder="main" />
+
+  <label>Machine Type</label>
+  <input id="machine" placeholder="standardLinux" />
+
+  <div>
+    <button onclick="createCodespace()">Create Codespace</button>
+    <button onclick="getStatus()">Check Status</button>
+    <button onclick="stopCodespace()">Stop Codespace</button>
+  </div>
+
+  <pre id="output"></pre>
+
+  <script>
+    let createdName = "";
+
+    function showOutput(data) {
+      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function createCodespace() {
+      const repo = document.getElementById('repo').value;
+      const branch = document.getElementById('branch').value;
+      const machine = document.getElementById('machine').value;
+
+      const res = await fetch('/api/codespace/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repo, branch, machine })
+      });
+
+      const data = await res.json();
+      createdName = data.result?.codespaceId || '';
+      showOutput(data);
+    }
+
+    async function getStatus() {
+      if (!createdName) return alert('No codespace name saved. Create one first.');
+      const res = await fetch(`/api/codespace/status/${createdName}`);
+      const data = await res.json();
+      showOutput(data);
+    }
+
+    async function stopCodespace() {
+      if (!createdName) return alert('No codespace name saved. Create one first.');
+      const res = await fetch(`/api/codespace/stop/${createdName}`, { method: 'DELETE' });
+      const data = await res.json();
+      showOutput(data);
+    }
+  </script>
+</body>
+</html>

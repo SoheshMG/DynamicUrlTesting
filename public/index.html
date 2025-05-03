@@ -1,35 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Code Generation Signup</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
-        #preview-section { margin-top: 20px; display: none; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Codespace Manager</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f8f8f8; }
+    button { margin: 0.5rem; padding: 0.5rem 1rem; }
+    #status { margin-top: 1rem; }
+    input { margin: 0.5rem 0; width: 300px; padding: 0.4rem; }
+  </style>
 </head>
 <body>
-    <h1>Generate Code Preview</h1>
-    <form id="signupForm">
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" required>
-        </div>
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" id="username" required>
-        </div>
-        <button type="submit">Generate Code</button>
-    </form>
+  <h2>GitHub Codespace Manager</h2>
 
-    <div id="preview-section">
-        <p>Your preview is ready: <a id="preview-link" target="_blank">Open Preview</a></p>
-        <p>Bookmark this URL to access later</p>
-    </div>
+  <label>GitHub Repo (e.g. user/repo):</label><br />
+  <input type="text" id="repo" placeholder="org/repo" /><br />
+  
+  <label>Branch:</label><br />
+  <input type="text" id="branch" placeholder="main" /><br />
 
-    <script src="script.js"></script>
+  <button onclick="createCodespace()">Create Codespace</button>
+  <button onclick="checkStatus()">Check Devcontainer Status</button>
+  <button onclick="stopCodespace()">Stop/Delete Codespace</button>
+
+  <div id="status"></div>
+
+  <script>
+    let currentCodespaceName = "";
+
+    async function createCodespace() {
+      const repo = document.getElementById("repo").value;
+      const branch = document.getElementById("branch").value;
+
+      const res = await fetch("/api/codespace/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repo, branch })
+      });
+
+      const data = await res.json();
+      document.getElementById("status").innerText = JSON.stringify(data, null, 2);
+      if (data.codespaceName) currentCodespaceName = data.codespaceName;
+    }
+
+    async function checkStatus() {
+      if (!currentCodespaceName) {
+        alert("No codespace created yet!");
+        return;
+      }
+
+      const res = await fetch(`/api/codespace/status/${currentCodespaceName}`);
+      const data = await res.json();
+      document.getElementById("status").innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function stopCodespace() {
+      if (!currentCodespaceName) {
+        alert("No codespace created yet!");
+        return;
+      }
+
+      const res = await fetch(`/api/codespace/${currentCodespaceName}`, {
+        method: "DELETE"
+      });
+      const data = await res.json();
+      document.getElementById("status").innerText = JSON.stringify(data, null, 2);
+    }
+  </script>
 </body>
 </html>
